@@ -15,18 +15,23 @@ namespace Infraestructure.Productos
         }
         public Update(producto p)
         {
-            if(p==null)
+            if (p == null)
             {
                 throw new ArgumentException("El producto no puede ser null");
             }
             int index = GetIndexById(p.Id);
-            if(index<=0)
+            if (index <= 0)
             {
                 throw new Exception($"El producto con id {p.Id} no se encuentra");
             }
             productos[index] = p;
             return index;
         }
+
+        public ProductoModel()
+        {
+        }
+
         public bool Delete(producto p)
         {
             if (p == null)
@@ -39,12 +44,12 @@ namespace Infraestructure.Productos
                 throw new Exception($"El producto con id {p.Id} no se encuentra");
             }
 
-            if(index==productos.Length-1)
+            if (index == productos.Length - 1)
             {
                 productos[index] = productos[productos.Length - 1];
 
             }
-            producto[]tmp=new producto[productos.Length-1]
+            producto[] tmp = new producto[productos.Length - 1]
                 Array.Copy(productos, tmp, tmp.Length);
             productos = tmp;
             return productos.Length == tmp.Length;
@@ -54,10 +59,6 @@ namespace Infraestructure.Productos
             return productos;
         }
         #endregion
-        public void GetAll()
-        {
-            return productos;
-        }
         #region Private Method
         private void Add(producto p, ref producto[] pds)
         {
@@ -69,25 +70,25 @@ namespace Infraestructure.Productos
             }
 
             producto[] tmp = new producto[pds.Length + 1];
-            Array.Copy(pds, tmp,pds.Length);
+            Array.Copy(pds, tmp, pds.Length);
             tmp[tmp.Length - 1] = p;
             pds = tmp;
         }
         //Metodo para encontrar ID//
         private int GetIndexById(int id)
         {
-            if(id<=0)
+            if (id <= 0)
             {
                 throw new ArgumentException("El id no puede ser negativo o cero");
             }
             int index = int.MinValue, i = 0;
-            if(productos==null)
+            if (productos == null)
             {
                 return index;
             }
-            foreach(producto p in productos)
+            foreach (producto p in productos)
             {
-                if(p.Id==id)
+                if (p.Id == id)
                 {
                     index = i;
                     break;
@@ -99,12 +100,70 @@ namespace Infraestructure.Productos
         #region Queries
         public producto GetProductoById(int id)
         {
-            if(id<=0)
+            if (id <= 0)
             {
                 throw new ArgumentException($"El Id: {id} no es valido");
             }
             int index = GetIndexById(id);
             return index <= 0 ? null : productos[index];
+        }
+        public producto[] GetProductosByUnidadMedida(UnidadMedida um)
+        {
+            producto[] tmp = null;
+            if (productos == null)
+            {
+                return tmp;
+            }
+            foreach (producto p in productos)
+            {
+                if (p.UnidadMedida == um)
+                {
+                    Add(p, ref tmp);
+                }
+            }
+            return tmp;
+        }
+        public producto[] GetProductoByVencimiento(DataTime dt)
+        {
+            producto[] tmp = null;
+            if (productos == null)
+            {
+                return tmp;
+            }
+            foreach (producto p in productos)
+            {
+                if (p.FechaVencimiento.CompareTo(dt) <= 0)
+                {
+                    Add(p, ref tmp);
+                }
+            }
+
+            return tmp;
+        }
+        public producto[] GetProductoByRangoPrecio(decimal start, decimal end)
+        {
+            producto[] tmp = null;
+            if (productos == null)
+            {
+                return tmp;
+            }
+            foreach (producto p in productos)
+            {
+                if (p.Precio >= start && p.Precio <= end)
+                {
+                    Add(p, ref tmp);
+                }
+            }
+            return tmp;
+        }
+        public producto[] GetProductosOrderByPrecio()
+        {
+            Array.Sort(productos, new producto.ProductoPrecioComparer());
+            return productos;
+        }
+        public string GetProductosAsJson()
+        {
+            return JsonConvert
         }
         #endregion
     }
